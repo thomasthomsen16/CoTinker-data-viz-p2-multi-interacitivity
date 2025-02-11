@@ -39,7 +39,7 @@ function renderStaticChart(sampledData, chartId) {
         height: 600,
         data: { values: sampledData },
         mark: { type: "circle" },
-        config: {background: "#9494948a"},
+        config: { background: "#9494948a" },
         encoding: {
             x: { field: "danceability", type: "quantitative", scale: { domain: [0, 1] } },
             y: { field: "tempo", type: "quantitative", scale: { domain: [0, 220] } },
@@ -153,7 +153,7 @@ function renderStaticChart2(sampledData, chartId) {
         height: 600,
         data: { values: sampledData },
         mark: { type: "circle" },
-        config: {background: "#9494948a"},
+        config: { background: "#9494948a" },
         encoding: {
             x: { field: "valence", type: "quantitative", scale: { domain: [0, 1] } },
             y: { field: "energy", type: "quantitative", scale: { domain: [0, 1] } },
@@ -189,8 +189,8 @@ function renderInteractiveChart2(sampledData, chartId) {
         data: { values: sampledData },
         mark: { type: "circle", clip: "true" },
         encoding: {
-            x: { field: "valence", type: "quantitative", scale: { domain: { signal: "xDomain" } } },
-            y: { field: "energy", type: "quantitative", scale: { domain: { signal: "yDomain" } } },
+            x: { field: "valence", type: "quantitative", scale: { domain: { signal: "xDomain2" } } },
+            y: { field: "energy", type: "quantitative", scale: { domain: { signal: "yDomain2" } } },
             color: {
                 field: "playlist_genre",
                 type: "nominal",
@@ -209,11 +209,11 @@ function renderInteractiveChart2(sampledData, chartId) {
         },
         params: [
             {
-                name: "xDomain",
+                name: "xDomain2",
                 value: [0, 1], // Initial range for the x-axis
             },
             {
-                name: "yDomain",
+                name: "yDomain2",
                 value: [0, 1], // Initial range for the y-axis
             },
             {
@@ -260,6 +260,7 @@ function renderInteractiveChart2(sampledData, chartId) {
 
 // Function to update the chart color dynamically using Vega Signals
 function updateChartColor(newColor, genre) {
+    //Top chart
     if (interactiveChartView) {
         if (genre === "edm") {
             interactiveChartView.signal("edmColorSignal", newColor).runAsync();
@@ -283,7 +284,7 @@ function updateChartColor(newColor, genre) {
     } else {
         console.warn("Chart view not initialized yet.");
     }
-
+    //Bottom chart
     if (interactiveChartView2) {
         if (genre === "edm") {
             interactiveChartView2.signal("edmColorSignal", newColor).runAsync();
@@ -390,9 +391,44 @@ document.getElementById("y-axis-max-down").addEventListener("click", () => {
     updateAxisRange("yMax", "decrease");  // Decrease yMax by 10
 });
 
+//shift data up-down for bottom chart
+document.getElementById("x-axis-min-up2").addEventListener("click", () => {
+    updateAxisRange("xMin2", "increase");  // Increase xMin by 0.1
+});
+
+document.getElementById("x-axis-max-up2").addEventListener("click", () => {
+    updateAxisRange("xMax2", "increase");  // Increase xMax by 0.1
+});
+
+document.getElementById("x-axis-min-down2").addEventListener("click", () => {
+    updateAxisRange("xMin2", "decrease");  // Decrease xMin by 0.1
+});
+
+document.getElementById("x-axis-max-down2").addEventListener("click", () => {
+    updateAxisRange("xMax2", "decrease");  // Decrease xMax by 0.1
+});
+
+document.getElementById("y-axis-min-up2").addEventListener("click", () => {
+    updateAxisRange("yMin2", "increase");  // Increase yMin by 10
+});
+
+document.getElementById("y-axis-max-up2").addEventListener("click", () => {
+    updateAxisRange("yMax2", "increase");  // Increase yMax by 10
+});
+
+document.getElementById("y-axis-min-down2").addEventListener("click", () => {
+    updateAxisRange("yMin2", "decrease");  // Decrease yMin by 10
+});
+
+document.getElementById("y-axis-max-down2").addEventListener("click", () => {
+    updateAxisRange("yMax2", "decrease");  // Decrease yMax by 10
+});
+
 
 
 function updateAxisRange(axis, operation) {
+
+    //Top chart
     if (!interactiveChartView) {
         console.warn("Chart view is not initialized yet.");
         return;
@@ -427,5 +463,43 @@ function updateAxisRange(axis, operation) {
         // Update the signal value for yDomain
         interactiveChartView.signal("yDomain", newDomain).runAsync();
         console.log(`Updated yDomain to: ${newDomain}`);
+    };
+    //Bottom chart
+    if (!interactiveChartView2) {
+        console.warn("Chart2 view is not initialized yet.");
+        return;
     }
+
+    // Update x-axis
+    if (axis === "xMin2" || axis === "xMax2") {
+        const xDomain2 = interactiveChartView2.signal("xDomain2");
+        let newDomain2 = [...xDomain2];
+
+        if (axis === "xMin2") {
+            newDomain2[0] += (operation === "increase" ? 0.1 : -0.1);  // Increase or decrease xMin
+        } else if (axis === "xMax2") {
+            newDomain2[1] += (operation === "increase" ? 0.1 : -0.1);  // Increase or decrease xMax
+        }
+
+        // Update the signal value for xDomain
+        interactiveChartView2.signal("xDomain2", newDomain2).runAsync();
+        console.log(`Updated xDomain2 to: ${newDomain2}`);
+
+        // Update y-axis
+    } else if (axis === "yMin2" || axis === "yMax2") {
+        const yDomain2 = interactiveChartView2.signal("yDomain2");
+        let newDomain2 = [...yDomain2];
+
+        if (axis === "yMin2") {
+            newDomain2[0] += (operation === "increase" ? 0.1 : -0.1);  // Increase or decrease yMin
+        } else if (axis === "yMax2") {
+            newDomain2[1] += (operation === "increase" ? 0.1 : -0.1);  // Increase or decrease yMax
+        }
+
+        // Update the signal value for yDomain
+        interactiveChartView2.signal("yDomain2", newDomain2).runAsync();
+        console.log(`Updated yDomain2 to: ${newDomain2}`);
+    };
+
+
 }
