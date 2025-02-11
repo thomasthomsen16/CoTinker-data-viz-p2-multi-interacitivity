@@ -1,4 +1,5 @@
 let interactiveChartView = null; // Global reference to the chart view
+let interactiveChartView2 = null; // Global reference to the chart view
 
 // Default initial colors for all genres
 const initialEdmColor = "#4d78a7";  // Blue color for edm
@@ -24,6 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
 function renderCharts(sampledData) {
     renderInteractiveChart(sampledData, "interactive-chart");
     renderStaticChart(sampledData, "static-chart"); // Static chart does not change colors dynamically
+    renderInteractiveChart2(sampledData, "interactive-chart2");
+    renderStaticChart2(sampledData, "static-chart2"); // Static chart does not change colors dynamically
 }
 
 function renderStaticChart(sampledData, chartId) {
@@ -138,7 +141,121 @@ function renderInteractiveChart(sampledData, chartId) {
     }).catch(error => {
         console.error("Error embedding the chart:", error);
     });
+};
+
+function renderStaticChart2(sampledData, chartId) {
+    const chartContainer = document.getElementById(chartId);
+    chartContainer.innerHTML = ""; // Clear existing content
+
+    const spec = {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        width: 700,
+        height: 600,
+        data: { values: sampledData },
+        mark: { type: "circle" },
+        config: {background: "#9494948a"},
+        encoding: {
+            x: { field: "valence", type: "quantitative", scale: { domain: [0, 1] } },
+            y: { field: "energy", type: "quantitative", scale: { domain: [0, 1] } },
+            color: {
+                field: "playlist_genre",
+                type: "nominal",
+                scale: {
+                    domain: ["edm", "latin", "pop", "r&b", "rap", "rock"], // List of all genres
+                    range: [
+                        initialEdmColor,  // Use the global color for edm
+                        initialLatinColor,  // Use the global color for latin
+                        initialPopColor,   // Use the global color for pop
+                        initialRnbColor,   // Use the global color for r&b
+                        initialRapColor,   // Use the global color for rap
+                        initialRockColor   // Use the global color for rock
+                    ]
+                }
+            }
+        }
+    };
+
+    vegaEmbed(`#${chartId}`, spec);
 }
+
+function renderInteractiveChart2(sampledData, chartId) {
+    const chartContainer = document.getElementById(chartId);
+    chartContainer.innerHTML = ""; // Clear existing content
+
+    const spec = {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        width: 700,
+        height: 600,
+        data: { values: sampledData },
+        mark: { type: "circle", clip: "true" },
+        encoding: {
+            x: { field: "valence", type: "quantitative", scale: { domain: { signal: "xDomain" } } },
+            y: { field: "energy", type: "quantitative", scale: { domain: { signal: "yDomain" } } },
+            color: {
+                field: "playlist_genre",
+                type: "nominal",
+                scale: {
+                    domain: ["edm", "latin", "pop", "r&b", "rap", "rock"], // All genres now
+                    range: [
+                        { signal: "edmColorSignal" },   // Dynamic color for edm
+                        { signal: "latinColorSignal" }, // Dynamic color for latin
+                        { signal: "popColorSignal" },   // Dynamic color for pop
+                        { signal: "rnbColorSignal" },   // Dynamic color for r&b
+                        { signal: "rapColorSignal" },   // Dynamic color for rap
+                        { signal: "rockColorSignal" },  // Dynamic color for rock
+                    ]
+                }
+            }
+        },
+        params: [
+            {
+                name: "xDomain",
+                value: [0, 1], // Initial range for the x-axis
+            },
+            {
+                name: "yDomain",
+                value: [0, 1], // Initial range for the y-axis
+            },
+            {
+                name: "edmColorSignal",
+                value: initialEdmColor,
+                bind: { input: "color" }
+            },
+            {
+                name: "latinColorSignal",
+                value: initialLatinColor,
+                bind: { input: "color" }
+            },
+            {
+                name: "popColorSignal",
+                value: initialPopColor,
+                bind: { input: "color" }
+            },
+            {
+                name: "rnbColorSignal",
+                value: initialRnbColor,
+                bind: { input: "color" }
+            },
+            {
+                name: "rapColorSignal",
+                value: initialRapColor,
+                bind: { input: "color" }
+            },
+            {
+                name: "rockColorSignal",
+                value: initialRockColor,
+                bind: { input: "color" }
+            }
+        ]
+    };
+
+    vegaEmbed(`#${chartId}`, spec).then(result => {
+        interactiveChartView2 = result.view;
+        console.log("Interactive chart2 rendered and view is initialized.");
+    }).catch(error => {
+        console.error("Error embedding the char2:", error);
+    });
+};
 
 
 // Function to update the chart color dynamically using Vega Signals
@@ -161,6 +278,30 @@ function updateChartColor(newColor, genre) {
             console.log("Updated rap genre color to:", newColor);
         } else if (genre === "rock") {
             interactiveChartView.signal("rockColorSignal", newColor).runAsync();
+            console.log("Updated rock genre color to:", newColor);
+        }
+    } else {
+        console.warn("Chart view not initialized yet.");
+    }
+
+    if (interactiveChartView2) {
+        if (genre === "edm") {
+            interactiveChartView2.signal("edmColorSignal", newColor).runAsync();
+            console.log("Updated edm genre color to:", newColor);
+        } else if (genre === "latin") {
+            interactiveChartView2.signal("latinColorSignal", newColor).runAsync();
+            console.log("Updated latin genre color to:", newColor);
+        } else if (genre === "pop") {
+            interactiveChartView2.signal("popColorSignal", newColor).runAsync();
+            console.log("Updated pop genre color to:", newColor);
+        } else if (genre === "r&b") {
+            interactiveChartView2.signal("rnbColorSignal", newColor).runAsync();
+            console.log("Updated r&b genre color to:", newColor);
+        } else if (genre === "rap") {
+            interactiveChartView2.signal("rapColorSignal", newColor).runAsync();
+            console.log("Updated rap genre color to:", newColor);
+        } else if (genre === "rock") {
+            interactiveChartView2.signal("rockColorSignal", newColor).runAsync();
             console.log("Updated rock genre color to:", newColor);
         }
     } else {
@@ -216,6 +357,7 @@ function getRandomSample(data, sampleSize) {
     return sampledData;
 }
 
+//shift data up-down for top chart
 document.getElementById("x-axis-min-up").addEventListener("click", () => {
     updateAxisRange("xMin", "increase");  // Increase xMin by 0.1
 });
