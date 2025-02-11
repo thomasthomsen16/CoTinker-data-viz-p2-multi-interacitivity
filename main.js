@@ -36,6 +36,7 @@ function renderStaticChart(sampledData, chartId) {
         height: 600,
         data: { values: sampledData },
         mark: { type: "circle" },
+        config: {background: "#9494948a"},
         encoding: {
             x: { field: "danceability", type: "quantitative", scale: { domain: [0, 1] } },
             y: { field: "tempo", type: "quantitative", scale: { domain: [0, 220] } },
